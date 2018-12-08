@@ -1,18 +1,14 @@
-#define UNICODE
-#include once "windows.bi"
-
 #include once "dwstring.bi"
 
 #macro hCheckString( x, s )
 	scope
 		if( len(x) <> len(s) ) then
 			print "failed: length " & len(x) & " <> " & len(s) & " @ line " & __LINE__
-			end 1
 		else
 			for i as integer = 0 to len(x)
 				if( x[i] <> s[i] ) then
 					print "failed: strings not equal @ line " & __LINE__
-					end 1
+					exit for
 				end if
 			next
 		end if
@@ -93,16 +89,23 @@ scope
 		hCheckString( x, w )
 	end scope
 
+	'' left
+	scope
+		dim w as wstring * 50 = !"wstring\u4644" & wspace(5)
+		dim x as dwstring = w
+		w = "'" & left( w, 3 ) & "'"
+		'' !!! fail, ambiguous call to overloaded function
+		'' x = "'" & left( x, 3 ) & "'"
+		hCheckString( x, w )
+	end scope
+
 	'' ltrim
 	scope
 		dim w as wstring * 50 = wspace(5) & !"wstring\u4644" & wspace(5)
-		dim x as dwstring = wspace(5) & !"wstring\u4644" & wspace(5)
+		dim x as dwstring = w
 		w = "'" & ltrim( w ) & "'"
 		x = "'" & ltrim( x ) & "'"
-
-		'' MessageBox( NULL, w, "main", MB_OK )
-		'' MessageBox( NULL, x, "main", MB_OK )
-
+		'' !!! fail, implicit cast to STRING instead of WSTRING PTR
 		hCheckString( x, w )
 	end scope
 
